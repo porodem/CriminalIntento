@@ -1,5 +1,6 @@
 package com.porodem.criminalintento;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -13,6 +14,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 
+import java.util.List;
 import java.util.UUID;
 
 import static android.widget.CompoundButton.*;
@@ -25,12 +27,17 @@ public class CrimeFragment extends Fragment {
 
     private static final String ARG_CRIME_ID = "crime_id";
 
+    private static final int TO_FIRST_CRIME = 0;
+    private static final int TO_LAST_CRIME = 1;
+
     private Crime mCrime;
     private EditText mTitleField;
-    private Button mDateButton;
+    private Button mDateButton, mToFirstButton, mToLastButton;
     private CheckBox mSolvedCheckBox;
 
-    //new instance of fragment with arguments (must called from CrimeActivity)
+
+
+    //new instance of fragment with arguments (must called from Crime Activity)
     public static CrimeFragment newInstance(UUID crimeId) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_CRIME_ID,crimeId);
@@ -43,11 +50,8 @@ public class CrimeFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //UUID crimeId = (UUID)getActivity().getIntent()
-          //      .getSerializableExtra(CrimeActivity.EXTRA_CRIME_ID);
         UUID crimeId = (UUID)getArguments().getSerializable(ARG_CRIME_ID);
         mCrime = CrimeLab.get(getActivity()).getCrime(crimeId);
-        //mCrime = new Crime();
     }
 
     @Nullable
@@ -87,6 +91,40 @@ public class CrimeFragment extends Fragment {
             }
         });
 
+        //exersice 11
+        mToLastButton = v.findViewById(R.id.button_last_crime);
+        if (!mCrime.getId().equals(edgeCrime(TO_LAST_CRIME).getId())) {
+            mToLastButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = CrimePagerActivity.newIntent(getActivity(), edgeCrime(TO_LAST_CRIME).getId());
+                    startActivity(intent);
+                }
+            });
+        } else mToLastButton.setEnabled(false);
+
+        mToFirstButton = v.findViewById(R.id.button_first_crime);
+        if (!mCrime.getId().equals(edgeCrime(TO_FIRST_CRIME).getId())) {
+        mToFirstButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = CrimePagerActivity.newIntent(getActivity(), edgeCrime(TO_FIRST_CRIME).getId());
+                startActivity(intent);
+            }
+        });
+        } else  mToFirstButton.setEnabled(false);
+
         return v;
+    }
+
+    //for exercise 11
+    private Crime edgeCrime(int position) {
+        CrimeLab crimeLab = CrimeLab.get(getActivity());
+        List<Crime> crimes = crimeLab.getCrimes();
+        mCrime = position<TO_LAST_CRIME ? crimes.get(0): crimes.get(crimes.size()-1);
+        if (position == 0) {
+            Crime c = crimes.get(0);
+            return c;
+        } else  return mCrime;
     }
 }
